@@ -16,42 +16,42 @@ globals().update(cf.load_organism_data(genome, maindir, config["verbose"]))
 cf.get_version()
 
 # do workflow specific stuff now
-include: os.path.join(workflow.basedir, "internals.snakefile")
+include: os.path.join(workflow.basedir, "internals.smk")
 
 ### include modules of other snakefiles ########################################
 ################################################################################
 
 # deeptools cmds
-include: os.path.join(maindir, "shared", "tools" , "deeptools_cmds.snakefile")
+include: os.path.join(maindir, "shared", "tools" , "deeptools_cmds.smk")
 
 ## bamCoverage_RPKM
-include: os.path.join(maindir, "shared", "rules", "deepTools_RNA.snakefile")
+include: os.path.join(maindir, "shared", "rules", "deepTools_RNA.smk")
 
 
 if not fromBAM:
     ## FASTQ: either downsample FASTQ files or create symlinks to input files
-    include: os.path.join(maindir, "shared", "rules", "FASTQ.snakefile")
-    include: os.path.join(maindir, "shared", "rules", "umi_tools.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "FASTQ.smk")
+    include: os.path.join(maindir, "shared", "rules", "umi_tools.smk")
 
     ## FastQC
     if fastqc:
-        include: os.path.join(maindir, "shared", "rules", "FastQC.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "FastQC.smk")
 
     ## Trim
     if trim:
-        include: os.path.join(maindir, "shared", "rules", "trimming.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "trimming.smk")
 
 else:
     fastqc=False
     trim=False
     downsample=None
-    include: os.path.join(maindir, "shared", "rules", "LinkBam.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "LinkBam.smk")
 
 ## Align and run TEcounts
-include: os.path.join(maindir, "shared", "rules", "tecounts.snakefile")
+include: os.path.join(maindir, "shared", "rules", "tecounts.smk")
 
 ## MultiQC
-include: os.path.join(maindir, "shared", "rules", "multiQC.snakefile")
+include: os.path.join(maindir, "shared", "rules", "multiQC.smk")
 
 ### conditional/optional rules #################################################
 ################################################################################

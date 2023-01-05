@@ -119,7 +119,7 @@ else:
     targets.append(os.path.join(outdir, "genome_fasta", "effectiveSize"))
 
 globals().update(organismDictionary)
-include: os.path.join(maindir, "shared", "rules", "createIndices.snakefile")
+include: os.path.join(maindir, "shared", "rules", "createIndices.smk")
 
 ### execute before workflow starts #############################################
 ################################################################################

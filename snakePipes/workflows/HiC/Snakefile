@@ -16,30 +16,30 @@ globals().update(cf.load_organism_data(genome, maindir, config["verbose"]))
 cf.get_version()
 
 # do workflow specific stuff now
-include: os.path.join(workflow.basedir, "internals.snakefile")
+include: os.path.join(workflow.basedir, "internals.smk")
 
 ### include modules of other snakefiles ########################################
 ################################################################################
 
 # FASTQ: either downsample FASTQ files or create symlinks to input files
-include: os.path.join(maindir, "shared", "rules", "FASTQ.snakefile")
+include: os.path.join(maindir, "shared", "rules", "FASTQ.smk")
 
 # FastQC
 if fastqc:
-    include: os.path.join(maindir, "shared", "rules", "FastQC.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "FastQC.smk")
 
 # trimming
 if trim:
-    include: os.path.join(maindir, "shared", "rules", "trimming.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "trimming.smk")
 
 #umi_tools
-include: os.path.join(maindir, "shared", "rules", "umi_tools.snakefile")
+include: os.path.join(maindir, "shared", "rules", "umi_tools.smk")
 
 # HiCExplorer
-include: os.path.join(maindir, "shared", "rules", "hicexplorer.snakefile")
+include: os.path.join(maindir, "shared", "rules", "hicexplorer.smk")
 
 # multiQC
-include: os.path.join(maindir, "shared", "rules", "multiQC.snakefile")
+include: os.path.join(maindir, "shared", "rules", "multiQC.smk")
 
 ### conditional/optional rules #################################################
 ################################################################################

@@ -15,42 +15,43 @@ globals().update(cf.load_organism_data(genome, maindir, config["verbose"]))
 cf.get_version()
 
 # do workflow specific stuff now
-include: os.path.join(workflow.basedir, "internals.snakefile")
+include: os.path.join(workflow.basedir, "internals.smk")
 
 
 ### include modules of other snakefiles ########################################
 ################################################################################
 
 # FASTQ: either downsample FASTQ files or create symlinks to input files
-include: os.path.join(maindir, "shared", "rules", "FASTQ.snakefile")
+include: os.path.join(maindir, "shared", "rules", "FASTQ.smk")
 
 # FastQC
 if fastqc:
-    include: os.path.join(maindir, "shared", "rules", "FastQC.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "FastQC.smk")
+
 
 # trimming
 if trim:
-    include: os.path.join(maindir, "shared", "rules", "trimming.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "trimming.smk")
 
 # BAM filtering
-include: os.path.join(maindir, "shared", "rules", "bam_filtering.snakefile")
+include: os.path.join(maindir, "shared", "rules", "bam_filtering.smk")
 
 #umi_tools extract and dedup
-include: os.path.join(maindir, "shared", "rules", "umi_tools.snakefile")
+include: os.path.join(maindir, "shared", "rules", "umi_tools.smk")
 #Sambamba Markdup
-include: os.path.join(maindir, "shared", "rules", "sambamba.snakefile")
+include: os.path.join(maindir, "shared", "rules", "sambamba.smk")
 
 # deeptools cmds
-include: os.path.join(maindir, "shared", "tools" , "deeptools_cmds.snakefile")
+include: os.path.join(maindir, "shared", "tools" , "deeptools_cmds.smk")
 
 # deepTools QC
-include: os.path.join(maindir, "shared", "rules", "deepTools_qc.snakefile")
+include: os.path.join(maindir, "shared", "rules", "deepTools_qc.smk")
 
 # Qualimap BAM QC
-include: os.path.join(maindir, "shared", "rules", "Qualimap_bamqc.snakefile")
+include: os.path.join(maindir, "shared", "rules", "Qualimap_bamqc.smk")
 
 ## MultiQC
-include: os.path.join(maindir, "shared", "rules", "multiQC.snakefile")
+include: os.path.join(maindir, "shared", "rules", "multiQC.smk")
 
 ## Allele-specific JOBs
 if "allelic-mapping" in mode:
@@ -64,24 +65,24 @@ if "allelic-mapping" in mode:
             allele_hybrid = 'dual'
             SNPFile = "snp_genome/all_" + strains[1] + "_SNPs_" + strains[0] + "_reference.based_on_" + genome + ".txt"
 
-        include: os.path.join(maindir, "shared", "rules", "masked_genomeIndex.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "masked_genomeIndex.smk")
     elif allele_mode == 'map_only':
         bowtie2_index_allelic = NMaskedIndex
         SNPFile = SNPfile
     ## mapping rules
-    include: os.path.join(maindir, "shared", "rules", "Bowtie2_allelic.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "Bowtie2_allelic.smk")
     ## SNPsplit
-    include: os.path.join(maindir, "shared", "rules", "SNPsplit.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "SNPsplit.smk")
     # deepTools QC
-    include: os.path.join(maindir, "shared", "rules", "deepTools_qc_allelic.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "deepTools_qc_allelic.smk")
 else:
     if aligner == "Bowtie2":
         # Bowtie2 mapping, duplicate marking, BAM filtering and indexing
-        include: os.path.join(maindir, "shared", "rules", "Bowtie2.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "Bowtie2.smk")
     elif aligner == "bwa":
-        include: os.path.join(maindir, "shared", "rules", "bwa.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "bwa.smk")
     elif aligner == "bwa-mem2":
-        include: os.path.join(maindir, "shared", "rules", "bwa-mem2.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "bwa-mem2.smk")
 
 ### conditional/optional rules #################################################
 ################################################################################

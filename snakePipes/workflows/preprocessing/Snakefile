@@ -14,16 +14,16 @@ globals().update(cf.load_configfile(workflow.overwrite_configfiles[0], config["v
 cf.get_version()
 
 # do workflow specific stuff now
-include: os.path.join(workflow.basedir, "internals.snakefile")
+include: os.path.join(workflow.basedir, "internals.smk")
 
 ### include modules of other snakefiles ########################################
 ################################################################################
 
 # The order of steps is:
-# 1. Merge samples across lanes (preprocessing.snakefile, mergedFASTQ)
-# 2. Deduplicate (preprocessing.snakefile, deduplicatedFASTQ)
-# 3. UMI extraction (umi_tools.snakefile)
-# 4. FastQC (FastQC.snakeFile)
+# 1. Merge samples across lanes (preprocessing.smk, mergedFASTQ)
+# 2. Deduplicate (preprocessing.smk, deduplicatedFASTQ)
+# 3. UMI extraction (umi_tools.smk)
+# 4. FastQC (FastQC.smk)
 # 5. MultiQC
 # If there are no options given then this just symlinks the files a few times.
 
@@ -37,23 +37,23 @@ if sampleSheet and sampleSheet != "":
     if not pairedEnd:
         readsUse = [reads[0]]
 
-include: os.path.join(maindir, "shared", "rules", "preprocessing.snakefile")
+include: os.path.join(maindir, "shared", "rules", "preprocessing.smk")
 infiles = expand("deduplicatedFASTQ/{sample}{RExt}{ext}", sample=samples, RExt=readsUse, ext=ext)
 
 indir = "deduplicatedFASTQ"
 deduped = infiles
 
 ## FASTQ: either downsample FASTQ files or create symlinks to input files
-include: os.path.join(maindir, "shared", "rules", "FASTQ.snakefile")
+include: os.path.join(maindir, "shared", "rules", "FASTQ.smk")
 
 #umi_tools
-include: os.path.join(maindir, "shared", "rules", "umi_tools.snakefile")
+include: os.path.join(maindir, "shared", "rules", "umi_tools.smk")
 
 ## FastQC
 if fastqc:
     trim = False  # the multiQC input checker needs this
-    include: os.path.join(maindir, "shared", "rules", "FastQC.snakefile")
-    include: os.path.join(maindir, "shared", "rules", "multiQC.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "FastQC.smk")
+    include: os.path.join(maindir, "shared", "rules", "multiQC.smk")
 else:
     fastqc = False
 

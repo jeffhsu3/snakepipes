@@ -16,38 +16,38 @@ globals().update(cf.load_organism_data(genome, maindir, config["verbose"]))
 cf.get_version()
 
 # do workflow specific stuff now
-include: os.path.join(workflow.basedir, "internals.snakefile")
+include: os.path.join(workflow.basedir, "internals.smk")
 
 ### include modules of other snakefiles ########################################
 ################################################################################
 
 # deeptools cmds
-include: os.path.join(maindir, "shared", "tools" , "deeptools_cmds.snakefile")
+include: os.path.join(maindir, "shared", "tools" , "deeptools_cmds.smk")
 
 ## filtered annotation (GTF)
-include: os.path.join(maindir, "shared", "rules", "filterGTF.snakefile")
+include: os.path.join(maindir, "shared", "rules", "filterGTF.smk")
 
 ## bamCoverage_RPKM
-include: os.path.join(maindir, "shared", "rules", "deepTools_RNA.snakefile")
+include: os.path.join(maindir, "shared", "rules", "deepTools_RNA.smk")
 
 
 if not fromBAM:
     ## FASTQ: either downsample FASTQ files or create symlinks to input files
-    include: os.path.join(maindir, "shared", "rules", "FASTQ.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "FASTQ.smk")
 
     ## FastQC
     if fastqc:
-        include: os.path.join(maindir, "shared", "rules", "FastQC.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "FastQC.smk")
 
     ## Trim
     if trim:
-        include: os.path.join(maindir, "shared", "rules", "trimming.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "trimming.smk")
 
     ## sambamba
-    include:os.path.join(maindir, "shared", "rules", "sambamba.snakefile")
+    include:os.path.join(maindir, "shared", "rules", "sambamba.smk")
 
     #umi_tools
-    include: os.path.join(maindir, "shared", "rules", "umi_tools.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "umi_tools.smk")
 
     ## Allele-specific JOBS
     if "allelic-mapping" in mode:
@@ -61,63 +61,63 @@ if not fromBAM:
                 allele_hybrid = 'dual'
                 SNPFile = "snp_genome/all_" + strains[1] + "_SNPs_" + strains[0] + "_reference.based_on_" + genome + ".txt"
 
-            include: os.path.join(maindir, "shared", "rules", "masked_genomeIndex.snakefile")
+            include: os.path.join(maindir, "shared", "rules", "masked_genomeIndex.smk")
         elif allele_mode == 'map_only':
             star_index_allelic = NMaskedIndex
             SNPFile = SNPfile
         ## mapping rules
-        include: os.path.join(maindir, "shared", "rules", "RNA_mapping_allelic.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "RNA_mapping_allelic.smk")
         ## SNPsplit
-        include: os.path.join(maindir, "shared", "rules", "SNPsplit.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "SNPsplit.smk")
         # deepTools QC
-        include: os.path.join(maindir, "shared", "rules", "deepTools_RNA_allelic.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "deepTools_RNA_allelic.smk")
     else:
         # HISAT2/STAR
-        include: os.path.join(maindir, "shared", "rules", "RNA_mapping.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "RNA_mapping.smk")
 
     ## Salmon
     if "alignment-free" in mode:
-        include: os.path.join(maindir, "shared", "rules", "Salmon.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "Salmon.smk")
         ## Sleuth (on Salmon)
         if sampleSheet:
             if isMultipleComparison:
-                include: os.path.join(maindir, "shared", "rules", "sleuth.multiComp.snakefile")
+                include: os.path.join(maindir, "shared", "rules", "sleuth.multiComp.smk")
             else:
-                include: os.path.join(maindir, "shared", "rules", "sleuth.singleComp.snakefile")
+                include: os.path.join(maindir, "shared", "rules", "sleuth.singleComp.smk")
 
 else:
     fastqc=False
     trim=False
     downsample=None
 
-    include: os.path.join(maindir, "shared", "rules", "LinkBam.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "LinkBam.smk")
 
 if "allelic-mapping" in mode:
     ## featureCounts_allelic
-    include: os.path.join(maindir, "shared", "rules", "featureCounts_allelic.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "featureCounts_allelic.smk")
 else:
     ## non-allelic featureCounts
-    include: os.path.join(maindir, "shared", "rules", "featureCounts.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "featureCounts.smk")
 
 ##Genomic_contamination
-include: os.path.join(maindir, "shared", "rules", "GenomicContamination.snakefile")
+include: os.path.join(maindir, "shared", "rules", "GenomicContamination.smk")
 
 ## QC report
-include:os.path.join(maindir, "shared", "rules", "RNA-seq_qc_report.snakefile")
+include:os.path.join(maindir, "shared", "rules", "RNA-seq_qc_report.smk")
 
 ## DESeq2
 if sampleSheet:
     if isMultipleComparison:
-        include: os.path.join(maindir, "shared", "rules", "DESeq2.multipleComp.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "DESeq2.multipleComp.smk")
         if rMats:
-            include: os.path.join(maindir, "shared", "rules", "rMats.multipleComp.snakefile")
+            include: os.path.join(maindir, "shared", "rules", "rMats.multipleComp.smk")
     else:
-        include: os.path.join(maindir, "shared", "rules", "DESeq2.singleComp.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "DESeq2.singleComp.smk")
         if rMats:
-            include: os.path.join(maindir, "shared", "rules", "rMats.singleComp.snakefile")
+            include: os.path.join(maindir, "shared", "rules", "rMats.singleComp.smk")
 
 ## MultiQC
-include: os.path.join(maindir, "shared", "rules", "multiQC.snakefile")
+include: os.path.join(maindir, "shared", "rules", "multiQC.smk")
 
 ### conditional/optional rules #################################################
 ################################################################################

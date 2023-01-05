@@ -22,7 +22,7 @@ globals().update(cf.load_organism_data(genome, maindir, config["verbose"]))
 cf.get_version()
 
 # do workflow specific stuff now
-include: os.path.join(workflow.basedir, "internals.snakefile")
+include: os.path.join(workflow.basedir, "internals.smk")
 
 ### include modules of other snakefiles ########################################
 ################################################################################
@@ -34,11 +34,11 @@ if sampleSheet:
 
 # FastQC
 if fastqc:
-    include: os.path.join(maindir, "shared", "rules", "FastQC.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "FastQC.smk")
 
 # trimming
 if trim:
-    include: os.path.join(maindir, "shared", "rules", "trimming.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "trimming.smk")
 
 ### conditional/optional rules #################################################
 #some of those definitions are used to generate output strings for some of the rules
@@ -130,17 +130,17 @@ def run_misc_QC(skipBamQC):
 ################################################################################
 if not fromBAM:
     #umi_tools
-    include: os.path.join(maindir, "shared", "rules", "umi_tools.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "umi_tools.smk")
     # FASTQ: either downsample FASTQ files or create symlinks to input files
-    include: os.path.join(maindir, "shared", "rules", "FASTQ.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "FASTQ.smk")
 else:
-    include: os.path.join(maindir, "shared", "rules", "LinkBam.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "LinkBam.smk")
 
 # WGBS
-include: os.path.join(maindir, "shared", "rules", "WGBS.snakefile")
+include: os.path.join(maindir, "shared", "rules", "WGBS.smk")
 
 # MultiQC
-include: os.path.join(maindir, "shared", "rules", "multiQC.snakefile")
+include: os.path.join(maindir, "shared", "rules", "multiQC.smk")
 
 ### execute before workflow starts #############################################
 ################################################################################

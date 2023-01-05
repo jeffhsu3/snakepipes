@@ -6,12 +6,13 @@ MPI-IE workflow for ChIP-seq analysis
 Usage example:
     ChIP-seq -d working-dir mm10 samples.yaml
 """
-
 import argparse
 import os
 import sys
 import textwrap
 import snakePipes.common_functions as cf
+from snakePipes.sample_pred import predict_chip_dict
+
 import snakePipes.parserCommon as parserCommon
 
 
@@ -170,7 +171,12 @@ def main():
 
     # Local argument checks
     if args.predictChIPDict is not None:
-        cf.predict_chip_dict(args.workingdir, args.predictChIPDict, args.bamExt, args.fromBAM)
+        predict_chip_dict(
+                args.workingdir, 
+                args.predictChIPDict, 
+                args.bamExt, 
+                args.fromBAM
+            )
         sys.exit(0)
 
     if args.samples_config is not None and os.path.exists(os.path.abspath(args.samples_config)):

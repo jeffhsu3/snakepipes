@@ -1,5 +1,5 @@
 ## sleuth (on Salmon)
-## requires the checkpoint rule defined in DESeq2.multipleComp.snakefile
+## requires the checkpoint rule defined in DESeq2.multipleComp.smk
 
 sample_name = os.path.splitext(os.path.basename(sampleSheet))[0]
 

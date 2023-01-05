@@ -18,38 +18,38 @@ globals().update(cf.load_organism_data(genome, maindir, config["verbose"]))
 cf.get_version()
 
 # do workflow specific stuff now
-include: os.path.join(workflow.basedir, "internals.snakefile")
+include: os.path.join(workflow.basedir, "internals.smk")
 
 
 ### include modules of other snakefiles ########################################
 ################################################################################
-include: os.path.join(maindir, "shared", "rules", "FASTQ.snakefile")
-include: os.path.join(maindir, "shared", "rules", "filterGTF.snakefile")
+include: os.path.join(maindir, "shared", "rules", "FASTQ.smk")
+include: os.path.join(maindir, "shared", "rules", "filterGTF.smk")
 #umi_tools
 if mode=="Gruen":
-    include: os.path.join(maindir, "shared", "rules", "umi_tools.snakefile")
-    include: os.path.join(maindir, "shared", "rules", "RNA_mapping.snakefile")
-    include: os.path.join(maindir, "shared", "rules", "scRNAseq_Gruen.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "umi_tools.smk")
+    include: os.path.join(maindir, "shared", "rules", "RNA_mapping.smk")
+    include: os.path.join(maindir, "shared", "rules", "scRNAseq_Gruen.smk")
     # TrimGalore
     if trim:
-        include: os.path.join(maindir, "shared", "rules", "trimming.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "trimming.smk")
 elif mode=="STARsolo":
-    include: os.path.join(maindir, "shared", "rules", "scRNAseq_STARsolo.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "scRNAseq_STARsolo.smk")
     trim=False
     skipRaceID=True
 elif mode=="Alevin":
-    include: os.path.join(maindir, "shared", "rules", "Salmon.snakefile")
-    include: os.path.join(maindir, "shared", "rules", "scRNAseq_Alevin.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "Salmon.smk")
+    include: os.path.join(maindir, "shared", "rules", "scRNAseq_Alevin.smk")
     trim=False
     skipRaceID=True
 pairedEnd = True
-include: os.path.join(maindir, "shared", "rules", "FastQC.snakefile")
+include: os.path.join(maindir, "shared", "rules", "FastQC.smk")
 pairedEnd = False
-include: os.path.join(maindir, "shared", "rules", "sambamba.snakefile")
-include: os.path.join(maindir, "shared", "rules", "RNA-seq_qc_report.snakefile")
-include: os.path.join(maindir, "shared", "tools" , "deeptools_cmds.snakefile")
-include: os.path.join(maindir, "shared", "rules", "deepTools_RNA.snakefile")
-include: os.path.join(maindir, "shared", "rules", "multiQC.snakefile")
+include: os.path.join(maindir, "shared", "rules", "sambamba.smk")
+include: os.path.join(maindir, "shared", "rules", "RNA-seq_qc_report.smk")
+include: os.path.join(maindir, "shared", "tools" , "deeptools_cmds.smk")
+include: os.path.join(maindir, "shared", "rules", "deepTools_RNA.smk")
+include: os.path.join(maindir, "shared", "rules", "multiQC.smk")
 
 
 ### conditional/optional rules #################################################

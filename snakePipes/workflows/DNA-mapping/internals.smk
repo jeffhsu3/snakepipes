@@ -35,6 +35,9 @@ if infiles == []:
 samples = cf.get_sample_names(infiles,ext,reads)
 
 pairedEnd = cf.is_paired(infiles,ext,reads)
+print('*' * 20)
+print(pairedEnd)
+print('*' * 20)
 
 del infiles
 

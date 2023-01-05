@@ -1,5 +1,5 @@
 ##STARsolo
-##remember that reads are swapped in internals.snakefile!!
+##remember that reads are swapped in internals.smk!!
 ###currently having CB and UB tags output in the bam requires --outSAMtype SortedByCoordinate !!
 import numpy
 import os

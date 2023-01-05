@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-
-# functions shared across workflows ##########################################
-##############################################################################
+""" Common functions for all workflows
+"""
 import subprocess
 import os
 import re
@@ -9,7 +7,7 @@ import yaml
 import glob
 import sys
 import shutil
-from fuzzywuzzy import fuzz
+from collections import defaultdict
 import smtplib
 from email.message import EmailMessage
 from snakePipes import __version__
@@ -48,7 +46,7 @@ def merge_dicts(x, y):
     return z
 
 
-# this is a pure sanity function to avoid obvious mailfunction during snakefile execution
+# this is a pure sanity function to avoid obvious malfunction during snakefile execution
 # because we load yaml/path/genome configs directly into global namespace!
 def sanity_dict_clean(myDict):
     unwanted_keys = ['maindir', 'workflow']
@@ -133,6 +131,7 @@ def load_organism_data(genome, maindir, verbose):
 def get_sample_names(infiles, ext, reads):
     """
     Get sample names without file extensions
+    # This errors out if not read suffix
     """
     s = set()
     lext = len(ext)
@@ -159,8 +158,7 @@ def get_sample_names(infiles, ext, reads):
 
 
 def get_sample_names_bam(infiles, bamExt):
-    """
-    Get sample names without file extensions
+    """ Get sample names without file extensions
     """
     s = []
     for x in infiles:
@@ -169,21 +167,17 @@ def get_sample_names_bam(infiles, bamExt):
     return sorted(list(set(s)))
 
 
-def is_paired(infiles, ext, reads):
-    """
-    Check for paired-end input files
+def is_paired(infiles, ext, reads) -> bool:
+    """Check for paired-end input files
     """
     pairedEnd = False
-    infiles_dic = {}
+    infiles_dic = defaultdict(list)
     for infile in infiles:
         fname = os.path.basename(infile).replace(ext, "")
         m = re.match("^(.+)(" + reads[0] + "|" + reads[1] + ")$", fname)
         if m:
             bname = m.group(1)
-            if bname not in infiles_dic:
-                infiles_dic[bname] = [infile]
-            else:
-                infiles_dic[bname].append(infile)
+            infiles_dic[bname].append(infile)
     if not infiles_dic:
         sys.exit("Error: No fastq file has been found to be checked.")
     values_length = [len(x) for x in infiles_dic.values()]
@@ -471,6 +465,7 @@ def setDefaults(fileName):
     """
     # Script-neutral paths
     baseDir = os.path.dirname(__file__)
+    print(baseDir)
     workflowDir = os.path.join(baseDir, "workflows", fileName)
 
     # defaults
@@ -590,7 +585,7 @@ def commonYAMLandLogs(baseDir, workflowDir, defaults, args, callingScript):
     # save to configs.yaml in outdir
     config = defaults
     config.update(vars(args))  # This allows modifications of args after handling a user config file to still make it to the YAML given to snakemake!
-    write_configfile(os.path.join(args.outdir, '{}.config.yaml'.format(workflowName)), config)
+    write_configfile(os.path.join(args.outdir, f'{workflowName}.config.yaml'), config)
 
     # merge cluster config files: 1) global one, 2) workflow specific one, 3) user provided one
     cfg = load_configfile(os.path.join(baseDir, "shared", "defaults.yaml"), False, "defaults")
@@ -630,16 +625,15 @@ def commonYAMLandLogs(baseDir, workflowDir, defaults, args, callingScript):
     if args.keepTemp:
         args.snakemakeOptions += " --notemp"
 
-    snakemake_cmd = """
-                    TMPDIR={tempDir} PYTHONNOUSERSITE=True {snakemake} {snakemakeOptions} --latency-wait {latency_wait} --snakefile {snakefile} --jobs {maxJobs} --directory {workingdir} --configfile {configFile} --keep-going
-                    """.format(snakemake=os.path.join(snakemake_path, "snakemake"),
-                               latency_wait=cluster_config["snakemake_latency_wait"],
-                               snakefile=os.path.join(workflowDir, "Snakefile"),
-                               maxJobs=args.maxJobs,
-                               workingdir=args.workingdir,
-                               snakemakeOptions=str(args.snakemakeOptions or ''),
-                               tempDir=cfg["tempDir"],
-                               configFile=os.path.join(args.outdir, '{}.config.yaml'.format(workflowName))).split()
+    snakemake_cmd = (
+            f"TMPDIR={cfg['tempDir']} PYTHONNOUSERSITE=True {os.path.join(snakemake_path, 'snakemake')} "
+            f"{str(args.snakemakeOptions or '')} " 
+            f"--latency-wait {cluster_config['snakemake_latency_wait']} " 
+            f"--snakefile {os.path.join(workflowDir, 'Snakefile')} " 
+            f"--jobs {args.maxJobs} --directory {args.outdir} "
+            f"--configfile {os.path.join(args.outdir, f'{workflowName}.config.yaml')} "
+            "--keep-going"
+            ).split()
 
     if args.verbose:
         snakemake_cmd.append("--printshellcmds")
@@ -728,81 +722,6 @@ def runAndCleanup(args, cmd, logfile_name):
     # Send email if desired
     if args.emailAddress:
         sendEmail(args, 0)
-
-
-def predict_chip_dict(wdir, input_pattern_str, bamExt, fromBAM=None):
-    """
-    Predict a chip_dict from set of bam files
-    ChIP input/control samples are identified from input_pattern (default: 'input')
-    for each sample then the best input sample (by fuzzywuzzy score) is selected
-    chip_dict is written as yaml to workflow workingdir
-    predicts whether a sample is broad or narrow based on histone mark pattern
-    """
-    pat = "|".join(re.split(',| |\\||;', input_pattern_str))
-    input_pat = r".*(" + pat + ")"
-    clean_pat = r"" + pat + ""
-    pat1 = re.compile(clean_pat, re.IGNORECASE)
-
-    if fromBAM:
-        infiles = sorted(glob.glob(os.path.join(fromBAM, '*' + bamExt)))
-    else:
-        infiles = sorted(glob.glob(os.path.join(wdir, 'filtered_bam/', '*.bam')))
-    samples = get_sample_names_bam(infiles, bamExt)
-
-    chip_dict_pred = {}
-    chip_dict_pred["chip_dict"] = {}
-    print("---------------------------------------------------------------------------------------")
-    print("Predict Chip-seq sample configuration")
-    print("---------------------------------------------------------------------------------------")
-    print("\nSearch for Input/control samples...")
-
-    input_samples = set([])
-    for i in samples:
-        if re.match(input_pat, i, re.IGNORECASE):
-            print("...found: ", i)
-            input_samples.add(i)
-
-    print("\nTry to find corresponding ChIP samples...")
-
-    for i in samples:
-        if i in input_samples:
-            continue
-
-        print("\n sample: ", i,)
-        matches_sim = {}
-        for j in input_samples:
-            c_clean = pat1.sub("", j)
-            sim1 = fuzz.ratio(c_clean, i) + fuzz.partial_ratio(c_clean, i) + fuzz.token_sort_ratio(c_clean, i) + fuzz.token_set_ratio(c_clean, i)
-            matches_sim[j] = sim1 / 4
-
-        sim = 0
-        final_matches = set([])
-        for key, value in sorted(matches_sim.items(), key=lambda k: (k[1], k[0]), reverse=True):
-            if value >= sim:
-                final_matches.add(key)
-                print("   top matching input sample by score: %s = %s" % (key, value))
-                sim = value
-
-        tmp = ':'.join(list(final_matches))
-
-        if len(final_matches) > 1:
-            tmp = "__PLEASE_SELECT_ONLY_ONE_CONTROL__:" + tmp
-        elif len(final_matches) == 0:
-            print("No control sample found!")
-
-        chip_dict_pred["chip_dict"][i] = {}
-        chip_dict_pred["chip_dict"][i]['control'] = tmp
-        if re.match(".*(H3K4me1|H3K36me3|H3K9me3|H3K27me3).*", i, re.IGNORECASE):
-            chip_dict_pred["chip_dict"][i]['broad'] = True
-        else:
-            chip_dict_pred["chip_dict"][i]['broad'] = False
-
-    outfile = os.path.join(wdir, "chip_seq_sample_config.PREDICTED.yaml")
-    write_configfile(outfile, chip_dict_pred)
-    print("---------------------------------------------------------------------------------------")
-    print("Chip-seq sample configuration is written to file ", outfile)
-    print("Please check and modify this file - this is just a guess! Then run the workflow with it.")
-    print("---------------------------------------------------------------------------------------")
 
 
 def writeTools(usedEnvs, wdir, workflowName, maindir):

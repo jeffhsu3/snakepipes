@@ -150,7 +150,6 @@ def main():
     ## End workflow-specific clode
 
     # Handle YAML and log files
-
     snakemake_cmd = cf.commonYAMLandLogs(baseDir, workflowDir, defaults, args, __file__)
     logfile_name = cf.logAndExport(args, os.path.basename(__file__))
 

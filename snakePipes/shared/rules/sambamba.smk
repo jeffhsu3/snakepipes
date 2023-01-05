@@ -1,6 +1,6 @@
 ##sambamba is used for marking up duplications
 
-## see Bowtie2.snakefile or RNA_mapping.snakefile for input
+## see Bowtie2.smk or RNA_mapping.smk for input
 ## takes the input from RNA mapping or DNA mapping snakefile
 # mark dups
 rule sambamba_markdup:

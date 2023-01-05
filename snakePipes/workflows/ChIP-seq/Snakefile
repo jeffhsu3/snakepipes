@@ -19,54 +19,54 @@ globals().update(cf.load_organism_data(genome, maindir, config["verbose"]))
 cf.get_version()
 
 # do workflow specific stuff now
-include: os.path.join(workflow.basedir, "internals.snakefile")
+include: os.path.join(workflow.basedir, "internals.smk")
 
 ### include modules of other snakefiles ########################################
 ################################################################################
 # deeptools cmds
-include: os.path.join(maindir, "shared", "tools" , "deeptools_cmds.snakefile")
+include: os.path.join(maindir, "shared", "tools" , "deeptools_cmds.smk")
 # fromBAM
 if fromBAM:
-    include: os.path.join(maindir, "shared", "rules", "LinkBam.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "LinkBam.smk")
     if not useSpikeInForNorm:
-        include: os.path.join(maindir, "shared", "rules", "deepTools_qc.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "deepTools_qc.smk")
 
 if useSpikeInForNorm:
-        include: os.path.join(maindir, "shared", "rules", "split_bam_ops_ChIP_spikein.snakefile")
-        include: os.path.join(maindir, "shared", "rules", "deepTools_ChIP_spikein.snakefile")
-        include: os.path.join(maindir, "shared", "rules", "ChIP_peak_calling_spikein.snakefile")
-        include: os.path.join(maindir, "shared", "rules", "filterGTF_spikein.snakefile")
+        include: os.path.join(maindir, "shared", "rules", "split_bam_ops_ChIP_spikein.smk")
+        include: os.path.join(maindir, "shared", "rules", "deepTools_ChIP_spikein.smk")
+        include: os.path.join(maindir, "shared", "rules", "ChIP_peak_calling_spikein.smk")
+        include: os.path.join(maindir, "shared", "rules", "filterGTF_spikein.smk")
 else:
     # deepTools ChIP
-    include: os.path.join(maindir, "shared", "rules", "deepTools_ChIP.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "deepTools_ChIP.smk")
     # MACS2, MACS2 peak QC, and Genrich
-    include: os.path.join(maindir, "shared", "rules", "ChIP_peak_calling.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "ChIP_peak_calling.smk")
 
 # QC report for all samples
-include: os.path.join(maindir, "shared", "rules", "ChiP-seq_qc_report.snakefile")
+include: os.path.join(maindir, "shared", "rules", "ChiP-seq_qc_report.smk")
 
 # sambamba
-#include: os.path.join(maindir, "shared", "rules", "sambamba.snakefile")
+#include: os.path.join(maindir, "shared", "rules", "sambamba.smk")
 
 # deeptools for allelic bams (if present)
 
 
 # histoneHMM (if mode is not allele-specific)
 if not allele_info:
-    include: os.path.join(maindir, "shared", "rules", "histoneHMM.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "histoneHMM.smk")
 else:
-    include: os.path.join(maindir, "shared", "rules", "deepTools_ChIP_allelic.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "deepTools_ChIP_allelic.smk")
 
 # CSAW for differential binding (if sampleinfo specified)
 if sampleSheet and cf.check_replicates(sampleSheet):
-    include: os.path.join(maindir, "shared", "rules", "CSAW.snakefile")
-    include: os.path.join(maindir, "shared", "rules", "nearestGene.snakefile")
-    include: os.path.join(maindir, "shared", "rules", "filterGTF.snakefile")
+    include: os.path.join(maindir, "shared", "rules", "CSAW.smk")
+    include: os.path.join(maindir, "shared", "rules", "nearestGene.smk")
+    include: os.path.join(maindir, "shared", "rules", "filterGTF.smk")
     #if not fromBAM and not useSpikeInForNorm:
         # These are needed for the snakefile to be imported
         #aligner = "Bowtie2"
         #downsample = False
-        #include: os.path.join(maindir, "shared", "rules", "deepTools_qc.snakefile")
+        #include: os.path.join(maindir, "shared", "rules", "deepTools_qc.smk")
 
 def run_histoneHMM(allele_info): # TODO what is a good practice for broad peaks of cutntag?
     if not allele_info:
